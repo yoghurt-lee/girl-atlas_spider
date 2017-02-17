@@ -91,15 +91,18 @@ def download(imgs, processes=10):
         pool.apply_async(download_one, (img, ))
     pool.close()
     pool.join()
-    print('下载完毕')
+    print  u'下载完毕'
 
 def start():
     page = 1
     while True:
         sleep(random.uniform(2,5)) #随机睡眠时间
         url = seed_url+'?p='+str(page)
+        print "Downloading:"+url
         html = str(get_html(url))
+        if html is None: break 
         soup = BeautifulSoup(html).find("div",{"class":"main col-md-9"})
+        if soup is None: break 
         soup_list = soup.findAll("div",{"class":"album-item row"})
         for i in soup_list:
             info = i.find("div",{"class","col-md-11 col-sm-11"}).find('a')
