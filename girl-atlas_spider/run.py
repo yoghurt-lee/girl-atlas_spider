@@ -4,10 +4,15 @@
 '''
 from multiprocessing import Process, Queue, Pool
 import re, os, random
+import sys
 from time import sleep
+import socket
 from bs4 import BeautifulSoup
 
 
+reload(sys)
+sys.setdefaultencoding( "utf-8" )
+socket.setdefaulttimeout(60)
 seed_url = 'https://www.girl-atlas.com'
 headers = {'user-agent':"Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:10.0) Gecko/20100101 Firefox/10.0"}
 imgheaders = {'Referer': 'https://www.girl-atlas.com/album/58a5dd2c92d3027f3583729b', 
@@ -15,12 +20,28 @@ imgheaders = {'Referer': 'https://www.girl-atlas.com/album/58a5dd2c92d3027f35837
 def get_html(url):
     """通过get方式获得页面
     """
-    import urllib2
-    req=urllib2.Request(url, headers=headers)#req表示向服务器发送请求#
-    response=urllib2.urlopen(req)#response表示通过调用urlopen并传入req返回响应response#
-    html=response.read()#用read解析获得的HTML文件#
-    return html
+    tryagain = True
+    while tryagain:
+        try:
+            import urllib2
+            req=urllib2.Request(url, headers=headers)#req表示向服务器发送请求#
+            response=urllib2.urlopen(req)#response表示通过调用urlopen并传入req返回响应response#
+            html=response.read()#用read解析获得的HTML文件#
+            return html
+        except:
+            tryagain = False
 
+def get_img(url):
+    tryagain = True
+    while tryagain:
+        try:
+            import urllib2
+            req=urllib2.Request(url, headers=imgheaders)#req表示向服务器发送请求#
+            response=urllib2.urlopen(req)#response表示通过调用urlopen并传入req返回响应response
+            return response
+        except:
+            tryagain = False
+            
 def info_analysis(info):
     url = seed_url+info.get('href')
     try:
@@ -64,11 +85,7 @@ def setup_download_dir(directory):
             pass
     return True
 
-def get_img(url):
-    import urllib2
-    req=urllib2.Request(url, headers=imgheaders)#req表示向服务器发送请求#
-    response=urllib2.urlopen(req)#response表示通过调用urlopen并传入req返回响应response
-    return response
+
 
 def download_one(img):
     """ 下载一张图片 """
