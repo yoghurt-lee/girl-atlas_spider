@@ -2,6 +2,7 @@
 '''
 运行此爬虫可以得到girl-atlas的妹子图
 '''
+#上次运行page: 48
 from multiprocessing import Process, Queue, Pool
 import re, os, random
 import sys
@@ -122,7 +123,11 @@ def start():
             soup = BeautifulSoup(html).find("div",{"class":"main col-md-9"})
             soup_list = soup.findAll("div",{"class":"album-item row"})
         except:
-            break
+            if page>200:
+                break
+            else:
+                page+=1
+                continue
         for i in soup_list:
             info = i.find("div",{"class","col-md-11 col-sm-11"}).find('a')
             picture_info = info_analysis(info)
