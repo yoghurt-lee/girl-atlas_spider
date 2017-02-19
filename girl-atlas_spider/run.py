@@ -29,18 +29,14 @@ def get_html(url):
             html=response.read()#用read解析获得的HTML文件#
             return html
         except:
+            print "try again!"
             tryagain = False
 
 def get_img(url):
-    tryagain = True
-    while tryagain:
-        try:
-            import urllib2
-            req=urllib2.Request(url, headers=imgheaders)#req表示向服务器发送请求#
-            response=urllib2.urlopen(req)#response表示通过调用urlopen并传入req返回响应response
-            return response
-        except:
-            tryagain = False
+    import urllib2
+    req=urllib2.Request(url, headers=imgheaders)#req表示向服务器发送请求#
+    response=urllib2.urlopen(req)#response表示通过调用urlopen并传入req返回响应response
+    return response
             
 def info_analysis(info):
     url = seed_url+info.get('href')
@@ -58,16 +54,17 @@ def info_analysis(info):
     filename = os.path.join(directory, "%s" % (content)).decode()
     return (url,directory,filename)
     
-
-
 def download_url_img(img):
     url = img[0]
     seed_filename = img[2]
     sleep(random.uniform(1,3)) #随机睡眠时间
     imgheaders['Referer'] = url
-    html = str(get_html(url))
-    soup = BeautifulSoup(html).find("ul",{"class":"slideview"})
-    soup_list = soup.findAll("img")
+    try:
+        html = str(get_html(url))
+        soup = BeautifulSoup(html).find("ul",{"class":"slideview"})
+        soup_list = soup.findAll("img")
+    except:
+        return
     imgs = []
     for i in range(len(soup_list)):
         filename = os.path.join(seed_filename, "%s.jpg" % (i)).decode()
@@ -95,10 +92,14 @@ def download_one(img):
         print('exists:', filepath)
         return
     setup_download_dir(directory)
-    resp = get_img(url)
-    with open(filepath, 'wb') as f:
-        f.write(resp.read())
-        print "download img success!"
+    try:
+        resp = get_img(url)
+        with open(filepath, 'wb') as f:
+            f.write(resp.read())
+            print "download img success!"
+    except:
+        print "download img fail!"
+        return
         
 
 def download(imgs, processes=10):
@@ -116,11 +117,12 @@ def start():
         sleep(random.uniform(2,5)) #随机睡眠时间
         url = seed_url+'?p='+str(page)
         print "Downloading:"+url
-        html = str(get_html(url))
-        if html is None: break 
-        soup = BeautifulSoup(html).find("div",{"class":"main col-md-9"})
-        if soup is None: break 
-        soup_list = soup.findAll("div",{"class":"album-item row"})
+        try:
+            html = str(get_html(url))
+            soup = BeautifulSoup(html).find("div",{"class":"main col-md-9"})
+            soup_list = soup.findAll("div",{"class":"album-item row"})
+        except:
+            break
         for i in soup_list:
             info = i.find("div",{"class","col-md-11 col-sm-11"}).find('a')
             picture_info = info_analysis(info)
